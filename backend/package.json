@@ -1,0 +1,20 @@
+{
+  "name": "eventix-backend",
+  "version": "1.0.0",
+  "description": "Eventix Microservices & Event-Driven Online Ticketing Platform Backend",
+  "main": "src/gateway/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/gateway/server.js",
+    "dev": "node --watch src/gateway/server.js",
+    "test": "node tests/test_runner.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0"
+  }
+}

@@ -5,17 +5,20 @@
 [![Vite](https://img.shields.io/badge/Vite-6.0-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![WebSocket](https://img.shields.io/badge/WebSocket-Real--Time-orange?style=for-the-badge&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Architecture](https://img.shields.io/badge/Architecture-Microservices_%26_Event--Driven-indigo?style=for-the-badge)](DOCUMENTATION.md)
 
-An enterprise-grade, **Microservices & Event-Driven** online ticketing platform. Event organizers sell tickets for **concerts, theaters, and sporting events**, while audience members discover events, select seats, and purchase tickets backed by real-time dynamic pricing, multi-terminal session mobility, distributed saga transactions, and chaos-tested fault tolerance.
+An enterprise-grade, **Microservices & Event-Driven** online ticketing platform. Event-executors sell tickets for **concerts, theaters, and sporting events**, while audience members discover events, select seats on an interactive 2D map, and purchase tickets backed by real-time dynamic pricing, multi-terminal session mobility, distributed saga transactions, and chaos-tested fault tolerance.
+
+> 📖 **Looking for in-depth architectural specifications, math models, and presentation Q&A?**  
+> Check out the complete [**Master Technical Documentation (DOCUMENTATION.md)**](DOCUMENTATION.md).
 
 ---
 
 ## 📑 Table of Contents
 
 - [Architectural Overview](#-architectural-overview)
-- [Key Features](#-key-features)
 - [System Architecture](#-system-architecture)
+- [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Repository Structure](#-repository-structure)
 - [Getting Started](#-getting-started)
@@ -26,28 +29,20 @@ An enterprise-grade, **Microservices & Event-Driven** online ticketing platform.
 - [Automated Verification Tests](#-automated-verification-tests)
 - [Interactive Feature Tour](#-interactive-feature-tour)
 - [API Reference](#-api-reference)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Technical Documentation](#-technical-documentation)
 
 ---
 
 ## 🌟 Architectural Overview
 
-Eventix is structured around clean domain separation, high concurrency protection, and decoupled asynchronous messaging:
+Eventix solves real-world distributed systems challenges (such as flash-sale seat double-booking, third-party payment crashes, and dynamic surge pricing):
 
-1. **API Gateway Service (`/api/*`)**: Central entry point handling client requests, terminal identity extraction (`X-Terminal-Id`, `X-Terminal-Label`), rate limiting, and CORS routing.
-2. **Auth & Multi-Terminal Session Service (`/api/auth/*`)**: Supports concurrent logins across multiple physical/simulated devices (Office Desktop, Laptop, Mobile iOS, Kiosk) with remote session inspection and instant revocation.
-3. **Event Catalog Service (`/api/events/*`)**: Manages events across Concerts, Theaters, and Sports with interactive 2D venue seating layouts (VIP, Platinum, Gold, Standard).
-4. **Dynamic Pricing Engine (`/api/pricing/*`)**: Calculates prices dynamically using:
-   - **Occupancy Scarcity**: Tiered surge (+15% at 70% capacity, +35% at 90% capacity).
-   - **Time Decay**: Early-bird discount vs. last-48h rush surcharge.
-   - **Sales Velocity**: High-frequency booking rate surge.
-5. **Booking & Saga Coordinator (`/api/bookings/*`)**: Orchestrates distributed 4-step Saga transactions with atomic distributed locks to prevent double-booking:
-   - `Step 1: AcquireSeatLock`
-   - `Step 2: FreezeDynamicPrice`
-   - `Step 3: AuthorizePayment` (guarded by Circuit Breakers)
-   - `Step 4: IssueTicket`
-6. **Analytics & Telemetry Service (`/api/analytics/*`)**: Consumes events from the Pub/Sub Event Bus to calculate revenue, dynamic pricing yield, and category metrics.
+1. **API Gateway Service (`/api/*`)**: Central ingress handling client requests, terminal hardware identity extraction (`X-Terminal-Id`, `X-Terminal-Label`), and CORS management.
+2. **Auth & Multi-Terminal Session Service (`/api/auth/*`)**: Supports concurrent logins across multiple physical machines (Office Desktop, Laptop, Mobile iOS, Kiosk) with remote session inspection and selective revocation.
+3. **Event Catalog Service (`/api/events/*`)**: Manages events across Concerts, Theaters, and Sports with 2D venue seating layouts (VIP, Platinum, Gold, Standard).
+4. **Dynamic Pricing Engine (`/api/pricing/*`)**: Algorithmic engine that adjusts prices based on **occupancy scarcity** (+15% at 70%, +35% at 90%), **time decay** (early-bird discount vs. 48h rush surge), and **sales velocity spikes**.
+5. **Booking & Saga Coordinator (`/api/bookings/*`)**: Orchestrates distributed 4-step Saga transactions with atomic distributed locks to prevent race conditions and double-booking.
+6. **Analytics & Telemetry Service (`/api/analytics/*`)**: Consumes events from the Pub/Sub Event Bus to calculate gross revenue, dynamic pricing yield, and category metrics.
 7. **Resilience & Chaos Engineering Console**: Live telemetry with circuit breakers (`CLOSED`, `OPEN`, `HALF_OPEN`), fault injection (HTTP 503 outage, latency injection), and real-time Event Bus streaming with Dead Letter Queue (DLQ) inspection.
 
 ---
@@ -91,6 +86,18 @@ Eventix is structured around clean domain separation, high concurrency protectio
 
 ---
 
+## ✨ Key Features
+
+- **Multi-Terminal Hardware Mobility**: Log in from multiple simulated or physical devices; view active sessions in real time; remotely revoke sessions from other devices.
+- **2D Interactive Venue Seating**: Color-coded seat tiers (VIP Row A, Platinum B–C, Gold D–E, Standard F) with live reservation hold timers.
+- **Concurrency Race Condition Defense**: Atomic test-and-set distributed locks prevent two users from booking the same seat at the same millisecond.
+- **Algorithmic Dynamic Pricing**: Live itemized breakdown showing Base Tier, Scarcity Surge, Early-Bird Discount, and Velocity Surcharge.
+- **Distributed Saga Transactions**: 4-stage non-blocking transaction pipeline with automated **Compensating Rollbacks** when payments fail.
+- **Chaos Engineering & Circuit Breakers**: Built-in fault injection (force HTTP 503, add network latency) to test circuit breakers and Dead Letter Queue (DLQ) recovery.
+- **Organizer Analytics Dashboard**: Real-time sales velocity, revenue telemetry, and **Dynamic Yield Uplift** ($ extra revenue captured via dynamic pricing vs flat base prices).
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technologies |
@@ -129,7 +136,7 @@ Eventix is structured around clean domain separation, high concurrency protectio
 │   │       └── pricing-service/         # Real-time dynamic pricing calculation
 │   └── tests/
 │       ├── test_runner.js               # Comprehensive unit & integration tests
-│       └── live_e2e_verification.js     # Live end-to-end suite
+│       └── live_e2e_verification.js     # Live end-to-end test suite
 ├── frontend/
 │   ├── index.html
 │   ├── package.json
@@ -154,8 +161,9 @@ Eventix is structured around clean domain separation, high concurrency protectio
 │       └── context/
 │           ├── AuthContext.jsx          # User & terminal state provider
 │           └── SocketContext.jsx        # WebSocket client provider
+├── DOCUMENTATION.md                     # Comprehensive Master Technical Documentation
 ├── .gitignore                           # Git ignore rules
-└── README.md                            # Documentation
+└── README.md                            # Project overview & quick start
 ```
 
 ---
@@ -171,7 +179,7 @@ Eventix is structured around clean domain separation, high concurrency protectio
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/<your-username>/eventix-ticketing-platform.git
+   git clone https://github.com/Nilesh1729-cse/eventix-ticketing-platform.git
    cd eventix-ticketing-platform
    ```
 
@@ -193,13 +201,13 @@ Eventix is structured around clean domain separation, high concurrency protectio
 ### Running the Application
 
 #### Option A: Unified Full-Stack Mode (Recommended)
-Once the frontend is built (`npm run build`), the Express Gateway serves both the API and the compiled React UI:
+The Express Gateway serves both the API and the compiled React UI on a single port:
 
 ```bash
 cd backend
 npm start
 ```
-- Open browser at: **`http://localhost:5000`**
+- Open your browser at: **`http://localhost:5000`**
 
 #### Option B: Standalone Frontend Dev Mode (with Hot Reloading)
 If you want to modify React components with instant Hot Module Replacement (HMR):
@@ -227,7 +235,7 @@ You can log in immediately using these pre-seeded accounts:
 |---|---|---|---|
 | **Audience** | `alex@eventix.io` | `Password123!` | Standard user account for booking seats |
 | **Organizer** | `organizer@eventix.io` | `Password123!` | Manages events, analyzes yield, tweaks pricing |
-| **Platform Admin** | `admin@eventix.io` | `Password123!` | Full administrative access |
+| **Platform Admin** | `admin@eventix.io` | `Password123!` | Full administrative and chaos console access |
 
 ---
 
@@ -245,6 +253,12 @@ Expected output:
 ====================================================
 🎉 ALL TESTS PASSED: 22 passed, 0 failed.
 ====================================================
+```
+
+To run the live HTTP/WebSocket end-to-end verification suite against a running server:
+```bash
+cd backend
+node tests/live_e2e_verification.js
 ```
 
 ---
@@ -288,25 +302,30 @@ Expected output:
 | `POST` | `/api/auth/register` | Register a new user |
 | `POST` | `/api/auth/login` | Login user & issue terminal session |
 | `GET` | `/api/auth/sessions` | Inspect active terminal sessions |
-| `POST` | `/api/auth/revoke-session` | Remotely revoke a terminal session |
+| `DELETE` | `/api/auth/sessions/:id` | Remotely revoke a terminal session |
+| `POST` | `/api/auth/sessions/revoke-others` | Revoke all other active terminal sessions |
 | `GET` | `/api/events` | List all events with pricing ranges |
-| `GET` | `/api/events/:id/seats` | Fetch 2D venue seat map and status |
-| `POST` | `/api/pricing/quote` | Calculate real-time dynamic price for a seat |
+| `GET` | `/api/events/:id` | Retrieve single event metadata |
+| `POST` | `/api/events` | Publish a new event (Organizer/Admin) |
+| `GET` | `/api/events/:id/seats` | Fetch 2D venue seat map and lock status |
+| `GET` | `/api/pricing/quote` | Calculate real-time dynamic price for a seat |
+| `GET` | `/api/pricing/rules/:id` | Fetch dynamic pricing configuration |
+| `PUT` | `/api/pricing/rules/:id` | Update dynamic pricing rules |
 | `POST` | `/api/bookings/hold` | Acquire atomic seat lock hold |
+| `POST` | `/api/bookings/release` | Release seat lock hold |
 | `POST` | `/api/bookings/checkout` | Execute 4-step booking saga |
-| `GET` | `/api/analytics/metrics` | Retrieve platform revenue and yield metrics |
-| `POST` | `/api/analytics/chaos` | Configure circuit breakers & fault injection |
+| `GET` | `/api/bookings/my-bookings` | Fetch user tickets |
+| `GET` | `/api/analytics/overview` | Platform overview KPIs & dynamic yield |
+| `GET` | `/api/analytics/event/:id` | Event-specific occupancy & revenue |
+| `GET` | `/api/analytics/resilience` | Circuit breakers, DLQ & system health |
+| `POST` | `/api/analytics/chaos/fault` | Inject chaos faults (latency, 503 outage) |
+| `POST` | `/api/analytics/chaos/reset` | Clear all chaos faults |
+| `POST` | `/api/analytics/circuit-breaker/reset` | Reset circuit breakers to CLOSED |
 
 ---
 
-## 🤝 Contributing
+## 📖 Technical Documentation
 
-Contributions, issues, and feature requests are welcome!
+For the complete architectural design document, mathematical formulas, viva voce examination questions, and presentation scripts, please refer to:
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
+👉 [**Master Technical Documentation (DOCUMENTATION.md)**](DOCUMENTATION.md)
